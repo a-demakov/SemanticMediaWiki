@@ -34,6 +34,23 @@ use User;
 class PageAnnotationImportSystemTest extends \MediaWikiTestCase {
 
 	/**
+	 * Use MediaWikiTestCase DB setup to avoid an error that is
+	 * caused by MySQL's handling of temporary tables
+	 *
+	 * @see https://github.com/SemanticMediaWiki/SemanticMediaWiki/pull/80
+	 *
+	 * @since 1.9.0.3
+	 */
+	function run( \PHPUnit_Framework_TestResult $result = NULL  ) {
+
+		if( $GLOBALS['wgDBtype'] == 'mysql' ) {
+			$this->setCliArg( 'use-normal-tables', true );
+		}
+
+		parent::run();
+	}
+
+	/**
 	 * @dataProvider importProvider
 	 *
 	 * @since 1.9
@@ -57,17 +74,6 @@ class PageAnnotationImportSystemTest extends \MediaWikiTestCase {
 			$title->exists(),
 			'Asserts that the Title does exist after the import'
 		);
-
-		// FIXME Apparently accessing the Store using the DB unit test table
-		// will cause:
-		//
-		// DBQueryError: A database error has occurred.
-		// Function: SMW::getSemanticData
-		// Error: 1137 Can't reopen table: 'p' (localhost)
-		//
-		// We suspend running this particular test until it is clear what
-		// is causing this issue
-		// SMW_SQLStore3_Readers.php:328 is causing the error
 
 		$this->assertPropertiesAreSet(
 			$this->fetchSemanticDataFromOutput( $title ),
